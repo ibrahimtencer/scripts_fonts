@@ -121,6 +121,7 @@ def emboldened(outline, extra, units_per_em):
     font.em = units_per_em
     glyph = font.createChar(-1, 'glyph')
     outline.replay(FontforgePen(glyph.glyphPen()))
+    glyph.removeOverlap()
     glyph.correctDirection()
     glyph.changeWeight(extra, 'LCG')
     result = RecordingPen()
@@ -142,6 +143,16 @@ def emboldened(outline, extra, units_per_em):
     return result
 
 
+def feature_map(font, tags):
+    #glyph substitutions of the given OpenType features, as {ordinary glyph: substituted glyph}, from their single-substitution lookups
+    if 'GSUB' not in font:
+        return {}
+    table = font['GSUB'].table
+    lookups = [table.LookupList.Lookup[index] for record in table.FeatureList.FeatureRecord if record.FeatureTag in tags for index in record.Feature.LookupListIndex]
+    subtables = [subtable.ExtSubTable if lookup.LookupType == 7 else subtable for lookup in lookups for subtable in lookup.SubTable]
+    return {source: target for subtable in subtables if hasattr(subtable, 'mapping') for source, target in subtable.mapping.items()}
+
+
 def member_of(archive, name):
     if zipfile.is_zipfile(io.BytesIO(archive)):
         return zipfile.ZipFile(io.BytesIO(archive)).read(name)
@@ -154,36 +165,47 @@ def companion(source, family, placement='capitals-outside'):
     glyphs = source.getGlyphSet()
     hmtx = source['hmtx']
 
-    def outline(char):
+    def outline(name):
         pen = DecomposingRecordingPen(glyphs)
-        glyphs[cmap[ord(char)]].draw(pen)
+        glyphs[name].draw(pen)
         return pen
 
-    def bounds(char):
+    def bounds(name):
         pen = BoundsPen(glyphs)
-        glyphs[cmap[ord(char)]].draw(pen)
+        glyphs[name].draw(pen)
         return pen.bounds
 
-    def real_pair(script, base):
-        #some fonts map a script code point to the ordinary letter or a full-height copy of it; height decides, since monospace cells force wide letters like m to stay wide
-        return ord(script) in cmap and ord(base) in cmap and cmap[ord(script)] != cmap[ord(base)] and (bounds(script)[3] - bounds(script)[1]) < 0.85 * (bounds(base)[3] - bounds(base)[1])
+    def real(script, base):
+        #whether glyph script is a genuine script form of the letter base; some fonts map a script code point to the ordinary letter or a full-height copy of it, and height decides, since monospace cells force wide letters like m to stay wide
+        return bool(script) and ord(base) in cmap and script != cmap[ord(base)] and (bounds(script)[3] - bounds(script)[1]) < 0.85 * (bounds(cmap[ord(base)])[3] - bounds(cmap[ord(base)])[1])
+
+    #designed script forms that the font reaches only through OpenType features, by the ordinary letter's glyph name
+    designed = {'super': feature_map(source, {'sups'}), 'sub': feature_map(source, {'subs', 'sinf'})}
+
+    def script_glyph(kind, letter):
+        #the font's own script form of a letter: the glyph at its code point, or else a designed glyph from its features, when either is genuine
+        point = superscript_point(letter) if kind == 'super' else subscript_point(letter)
+        candidates = [cmap.get(point), designed[kind].get(cmap.get(ord(letter)))]
+        return next((glyph for glyph in candidates if real(glyph, letter)), None)
 
     #monospace fonts do not all set post.isFixedPitch, so the letters' widths decide
     monospace = len({hmtx[cmap[ord(c)]][0] for c in string.ascii_letters}) == 1
-    cap_top = bounds('H')[3]
+    cap_top = bounds(cmap[ord('H')])[3]
 
-    def measured(pairs):
-        #(x scale, y scale, rise) turning a letter into the font's own script form of it, from the first pair the font has both halves of
-        for script, base in pairs:
-            if real_pair(script, base):
-                (bx0, by0, bx1, by1), (sx0, sy0, sx1, sy1) = bounds(base), bounds(script)
+    def measured(kind, letters):
+        #(x scale, y scale, rise) turning a letter into the font's own script form of it, from the first letter the font has a script form of
+        for letter in letters:
+            script = script_glyph(kind, letter)
+            if script:
+                (bx0, by0, bx1, by1), (sx0, sy0, sx1, sy1) = bounds(cmap[ord(letter)]), bounds(script)
                 x_scale, y_scale = (sx1 - sx0) / (bx1 - bx0), (sy1 - sy0) / (by1 - by0)
                 return x_scale, y_scale, sy0 - y_scale * by0
 
-    def extra_weight(pairs, x_scale):
-        #units to add to a scaled stem so it matches the stems of the font's own script letters, from the first pair with a straight stem; designers often draw scripts heavier than plain scaling would
-        for script, base in pairs:
-            base_stem, script_stem = real_pair(script, base) and (stem_width(outline(base)), stem_width(outline(script))) or (None, None)
+    def extra_weight(kind, letters, x_scale):
+        #units to add to a scaled stem so it matches the stems of the font's own script letters, from the first letter with a straight stem the font has a script form of; designers often draw scripts heavier than plain scaling would
+        for letter in letters:
+            script = script_glyph(kind, letter)
+            base_stem, script_stem = script and (stem_width(outline(cmap[ord(letter)])), stem_width(outline(script))) or (None, None)
             if base_stem and script_stem:
                 extra = script_stem - x_scale * base_stem
                 return extra if extra > 0.05 * x_scale * base_stem else 0
@@ -192,41 +214,64 @@ def companion(source, family, placement='capitals-outside'):
     #how far scripts go past the baseline or the cap height when the font gives nothing to copy: its own subscript offset, or nothing for flush placement (see PLACEMENTS)
     offset = 0 if placement == 'flush' else source['OS/2'].ySubscriptYOffset
     #without a superscript to measure: 63% by 56% (DejaVu Sans Mono's proportions), with capitals reaching the offset above the cap height
-    superscript = measured(['ᵃa', 'ⁿn', 'ᵒo', 'ˣx', 'ᴬA', 'ᴴH']) or (0.63, 0.56, cap_top * 0.44 + offset)
-    superscript += (extra_weight(['ⁿn', 'ʰh', 'ᵐm', 'ᵘu'], superscript[0]),)
+    superscript = measured('super', 'anoxAH') or (0.63, 0.56, cap_top * 0.44 + offset)
+    superscript += (extra_weight('super', 'nhmu', superscript[0]),)
     #without a subscript to measure: the superscript's size and weight, the offset below the baseline
-    subscript = measured(['ₐa', 'ₙn', 'ₒo', 'ₓx', 'ₑe'])
-    subscript = subscript + (extra_weight(['ₙn', 'ₕh', 'ₘm'], subscript[0]),) if subscript else (superscript[0], superscript[1], -offset, superscript[3])
+    subscript = measured('sub', 'anoxe')
+    subscript = subscript + (extra_weight('sub', 'nhm', subscript[0]),) if subscript else (superscript[0], superscript[1], -offset, superscript[3])
     #capitals are so tall that flush with the baseline or the cap height they read as small capitals, so with capitals-outside they go past the line even where the font's own lowercase scripts sit on it; a font's own capital superscripts still set where the others go
     small = 0.02 * source['head'].unitsPerEm
     capital_subscript = subscript[:2] + (-offset,) + subscript[3:] if placement == 'capitals-outside' and subscript[2] >= -small else subscript
-    own_capitals = any(real_pair(script, base) for script, base in ['ᴬA', 'ᴴH', 'ᴮB'])
+    own_capitals = any(script_glyph('super', letter) for letter in 'AHB')
     capital_superscript = superscript[:2] + (cap_top + offset - superscript[1] * cap_top,) + superscript[3:] if placement == 'capitals-outside' and not own_capitals and superscript[1] * cap_top + superscript[2] <= cap_top + small else superscript
 
-    #a script letter the font lacks, or only fakes with the ordinary letter, is drawn; a terminal that maps code points to fonts then overrides the fake
-    letters = string.ascii_lowercase + string.ascii_uppercase
-    targets = sorted(
-        [(subscript_point(c), c, capital_subscript if c.isupper() else subscript) for c in letters if not real_pair(chr(subscript_point(c)), c)]
-        + [(superscript_point(c), c, capital_superscript if c.isupper() else superscript) for c in letters if not real_pair(chr(superscript_point(c)), c)]
-    )
-
-    def scaled(letter, x_scale, y_scale, rise, extra):
-        #a monospace font keeps the full cell so the letter stays one column wide, a proportional one gets a scaled advance; the outline is centered either way
-        advance = hmtx[cmap[ord(letter)]][0] * (1 if monospace else x_scale)
-        shrunk = RecordingPen()
-        outline(letter).replay(TransformPen(shrunk, (x_scale, 0, 0, y_scale, 0, rise)))
+    def drawn(name, transform, advance, extra, center):
+        #glyph name's outline under transform, thickened by extra, and centered in advance when center is set
+        shaped = RecordingPen()
+        outline(name).replay(TransformPen(shaped, transform))
         if extra:
-            shrunk = emboldened(shrunk, extra, source['head'].unitsPerEm)
-        bounds = BoundsPen(None)
-        shrunk.replay(bounds)
-        x0, _, x1, _ = bounds.bounds
+            shaped = emboldened(shaped, extra, source['head'].unitsPerEm)
+        box = BoundsPen(None)
+        shaped.replay(box)
+        x0, _, x1, _ = box.bounds
         pen = TTGlyphPen(None)
         #CFF outlines run counterclockwise and TrueType ones clockwise; fontforge's correctDirection has already made emboldened ones clockwise
-        shrunk.replay(TransformPen(Cu2QuPen(pen, max_err=1, reverse_direction='glyf' not in source and not extra), (1, 0, 0, 1, advance / 2 - (x0 + x1) / 2, 0)))
+        shaped.replay(TransformPen(Cu2QuPen(pen, max_err=1, reverse_direction='glyf' not in source and not extra), (1, 0, 0, 1, advance / 2 - (x0 + x1) / 2 if center else 0, 0)))
         return pen.glyph(), round(advance)
 
-    names = {cp: f'u{cp:04X}' for cp, _, _ in targets}
-    built = {names[cp]: scaled(letter, *props) for cp, letter, props in targets}
+    def calibrated(kind, letters):
+        #(scale, vertical shift) that turn a designed script glyph into the font's own Unicode script glyph of the same letter, from the first letter that has both; some fonts position their feature glyphs differently from their Unicode ones (EB Garamond's superiors sit higher and its inferiors on the baseline)
+        for letter in letters:
+            point = superscript_point(letter) if kind == 'super' else subscript_point(letter)
+            form, unicode_form = designed[kind].get(cmap[ord(letter)]), cmap.get(point)
+            if real(form, letter) and real(unicode_form, letter) and form != unicode_form:
+                (_, fy0, _, fy1), (_, uy0, _, uy1) = bounds(form), bounds(unicode_form)
+                size = (uy1 - uy0) / (fy1 - fy0)
+                return size, uy0 - size * fy0
+        return None
+
+    #capitals use their own calibration when the font has capital Unicode scripts to match, and the lowercase one otherwise
+    calibration = {(kind, upper): (calibrated(kind, 'AHBDEN' if upper else 'anoxeh') or calibrated(kind, 'anoxeh') or (1, 0)) for kind in ('super', 'sub') for upper in (False, True)}
+
+    def glyph_for(kind, letter, props):
+        #a code point the font lacks, or only fakes with the ordinary letter, gets the font's designed script form when its features have one, copied as drawn and kept in place (centered in the cell for a monospace font); otherwise the letter scaled by props. A monospace font keeps the full cell so the letter stays one column wide, a proportional one gets a scaled advance.
+        letter_glyph = cmap[ord(letter)]
+        form = designed[kind].get(letter_glyph)
+        if real(form, letter):
+            size, shift = calibration[kind, letter.isupper()]
+            return drawn(form, (size, 0, 0, size, 0, shift), hmtx[letter_glyph][0] if monospace else hmtx[form][0] * size, 0, monospace)
+        x_scale, y_scale, rise, extra = props
+        return drawn(letter_glyph, (x_scale, 0, 0, y_scale, 0, rise), hmtx[letter_glyph][0] * (1 if monospace else x_scale), extra, True)
+
+    #a script code point the font lacks, or only fakes with the ordinary letter, is drawn; a terminal that maps code points to fonts then overrides the fake
+    letters = string.ascii_lowercase + string.ascii_uppercase
+    targets = sorted(
+        [(subscript_point(c), 'sub', c, capital_subscript if c.isupper() else subscript) for c in letters if not real(cmap.get(subscript_point(c)), c)]
+        + [(superscript_point(c), 'super', c, capital_superscript if c.isupper() else superscript) for c in letters if not real(cmap.get(superscript_point(c)), c)]
+    )
+
+    names = {cp: f'u{cp:04X}' for cp, _, _, _ in targets}
+    built = {names[cp]: glyph_for(kind, letter, props) for cp, kind, letter, props in targets}
 
     builder = FontBuilder(source['head'].unitsPerEm, isTTF=True)
     builder.setupGlyphOrder(['.notdef'] + list(built))
@@ -249,11 +294,11 @@ def companion(source, family, placement='capitals-outside'):
 
 
 def terminal_configs(font, family, source_family):
-    #config snippets per file name that make terminals draw the companion's code points with it; kitty and Ghostty map the exact code points, so they also override placeholders in the source font, and fontconfig makes the companion the source's first fallback for programs that follow fontconfig's order
+    #config snippets per file name that make programs draw the companion's code points with it, the terminal ones only for a monospace companion; kitty and Ghostty map the exact code points, so they also override placeholders in the source font, and fontconfig makes the companion the source's first fallback for programs that follow fontconfig's order
     points = sorted(font.getBestCmap())
     runs = [[cp for _, cp in run] for _, run in groupby(enumerate(points), lambda pair: pair[1] - pair[0])]
     ranges = ','.join(f'U+{run[0]:04X}' + (f'-U+{run[-1]:04X}' if len(run) > 1 else '') for run in runs)
-    return {
+    configs = {
         'kitty.conf': f'# kitty: include this file from kitty.conf\nsymbol_map {ranges} {family}\n',
         'ghostty.conf': f'# Ghostty: load this file with config-file = <path> in the Ghostty config\nfont-codepoint-map = {ranges}={family}\n',
         'fontconfig.conf': f'''<?xml version="1.0"?>
@@ -270,6 +315,7 @@ def terminal_configs(font, family, source_family):
 </fontconfig>
 ''',
     }
+    return {name: text for name, text in configs.items() if font['post'].isFixedPitch or name == 'fontconfig.conf'}
 
 
 def build(entry, placement='capitals-outside'):
