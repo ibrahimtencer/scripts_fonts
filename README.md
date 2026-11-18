@@ -78,7 +78,7 @@ Neovim treats these characters as one column wide as long as `ambiwidth` is `sin
 
 - The scale and vertical position come from a pair like a and ᵃ, or n and ⁿ. A font with no script letters gets 63% width, 56% height, and superscript capitals reaching the cap height, which are DejaVu Sans Mono's proportions.
 - Many fonts draw their script letters with heavier strokes than plain scaling gives. The build measures this from a pair like n and ⁿ and thickens the strokes with FontForge to match.
-- Each glyph is centered in the font's cell, so it stays one column wide.
+- Each glyph is centered in the font's cell, so it stays one column wide. For a proportional font (with `--font`), each glyph instead gets its letter's advance width scaled like the letter, and is centered in that.
 - Scripts follow the font's own sub- and superscripts when it has them. Otherwise they go past the baseline or the cap height by the subscript offset the font records (`ySubscriptYOffset`, 0.075 to 0.14 em in these fonts): subscripts drop below the baseline, and superscript capitals rise above the cap height. Capitals go past the line even in fonts whose own lowercase scripts sit on it, like DejaVu Sans Mono's subscripts, because capitals flush with the line are so tall that they read as small capitals. The exception is a font with its own capital superscripts, like ᴬ in DejaVu Sans Mono: the missing ones match those. `--placement` changes this (see below).
 - A few fonts fill a script code point with a full-size copy of the letter, like Inconsolata's ⁿ. The build treats those as missing, so terminals that map code points to fonts draw the companion's letter instead.
 

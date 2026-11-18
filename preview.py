@@ -36,18 +36,23 @@ halves = ['abcdefghijklm', 'nopqrstuvwxyz', 'ABCDEFGHIJKLM', 'NOPQRSTUVWXYZ']
 lines = [' '.join(('x' if c.islower() else 'H') + chr(point(c)) for c in half) for point in (subscript_point, superscript_point) for half in halves]
 
 
+def draw_line(draw, x, y, text, fonts, has_companion):
+    #draws text a character at a time, each from the companion (in red) when it has it and from the source otherwise, advancing by that character's own width so proportional fonts space naturally
+    for char in text:
+        which = 'companion' if ord(char) in has_companion else 'source'
+        draw.text((x, y), char, font=fonts[which], fill='black' if which == 'source' else '#b00000')
+        x += fonts[which].getlength(char)
+
+
 def specimen(source, companion_path, title, path):
     #a 1920x1080 sheet of every sub- and superscript letter after an ordinary letter, half an alphabet per line
     has_companion = set(TTFont(companion_path).getBestCmap())
     fonts = {'source': ImageFont.truetype(io.BytesIO(source), 64), 'companion': ImageFont.truetype(companion_path, 64)}
-    cell = fonts['source'].getlength('M')
     sheet = Image.new('RGB', (1920, 1080), 'white')
     draw = ImageDraw.Draw(sheet)
     draw.text((60, 30), title, font=ImageFont.truetype(io.BytesIO(source), 40), fill='#555555')
     for row, text in enumerate(lines):
-        for col, char in enumerate(text):
-            which = 'companion' if ord(char) in has_companion else 'source'
-            draw.text((60 + col * cell, 120 + row * 118), char, font=fonts[which], fill='black' if which == 'source' else '#b00000')
+        draw_line(draw, 60, 120 + row * 118, text, fonts, has_companion)
     sheet.save(path)
     print(path)
 
@@ -73,9 +78,7 @@ for row, entry in enumerate(entries):
     cell = fonts['source'].getlength('M')
     y = SIZE / 2 + row * SIZE * 1.7
     draw.text((SIZE / 2, y), entry['for'].rsplit(' ', 1)[0], font=fonts['source'], fill='#555555')
-    for col, char in enumerate(sample):
-        which = 'companion' if ord(char) in has_companion else 'source'
-        draw.text((SIZE / 2 + (label_width + col) * cell, y), char, font=fonts[which], fill='black' if which == 'source' else '#b00000')
+    draw_line(draw, SIZE / 2 + label_width * cell, y, sample, fonts, has_companion)
 image.save(os.path.join(ROOT, 'preview.png'))
 print(os.path.join(ROOT, 'preview.png'), image.size)
 
