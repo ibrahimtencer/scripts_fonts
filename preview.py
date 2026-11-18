@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#Renders preview.png: a sample line per font in sources.json, with each character drawn by the source font when it has it and by the companion (in red) otherwise.
+#Renders preview.png: a sample line per font in sources.json, with each character drawn by the companion (in red) when it has it, as a terminal that maps the companion's code points does, and by the source font otherwise.
 #Usage: preview.py, after build.py. Needs Pillow.
 import io
 import json
@@ -37,13 +37,13 @@ draw = ImageDraw.Draw(image)
 for row, entry in enumerate(entries):
     source = source_font(entry)
     companion_path = os.path.join(ROOT, 'fonts', entry['family'].replace(' ', ''), entry['family'].replace(' ', '') + '-Regular.ttf')
-    has_source = set(TTFont(io.BytesIO(source)).getBestCmap())
+    has_companion = set(TTFont(companion_path).getBestCmap())
     fonts = {'source': ImageFont.truetype(io.BytesIO(source), SIZE), 'companion': ImageFont.truetype(companion_path, SIZE)}
     cell = fonts['source'].getlength('M')
     y = SIZE / 2 + row * SIZE * 1.7
     draw.text((SIZE / 2, y), entry['for'].rsplit(' ', 1)[0], font=fonts['source'], fill='#555555')
     for col, char in enumerate(sample):
-        which = 'source' if ord(char) in has_source else 'companion'
+        which = 'companion' if ord(char) in has_companion else 'source'
         draw.text((SIZE / 2 + (label_width + col) * cell, y), char, font=fonts[which], fill='black' if which == 'source' else '#b00000')
 image.save(os.path.join(ROOT, 'preview.png'))
 print(os.path.join(ROOT, 'preview.png'), image.size)
@@ -55,7 +55,7 @@ lines = [' '.join(('x' if c.islower() else 'H') + chr(point(c)) for c in half) f
 for entry in entries:
     source = source_font(entry)
     companion_path = os.path.join(ROOT, 'fonts', entry['family'].replace(' ', ''), entry['family'].replace(' ', '') + '-Regular.ttf')
-    has_source = set(TTFont(io.BytesIO(source)).getBestCmap())
+    has_companion = set(TTFont(companion_path).getBestCmap())
     fonts = {'source': ImageFont.truetype(io.BytesIO(source), 64), 'companion': ImageFont.truetype(companion_path, 64)}
     cell = fonts['source'].getlength('M')
     specimen = Image.new('RGB', (1920, 1080), 'white')
@@ -64,7 +64,7 @@ for entry in entries:
     for row, text in enumerate(lines):
         y = 120 + row * 118
         for col, char in enumerate(text):
-            which = 'source' if ord(char) in has_source else 'companion'
+            which = 'companion' if ord(char) in has_companion else 'source'
             draw.text((60 + col * cell, y), char, font=fonts[which], fill='black' if which == 'source' else '#b00000')
     path = os.path.join(ROOT, 'specimens', entry['family'].replace(' ', '') + '.png')
     specimen.save(path)
