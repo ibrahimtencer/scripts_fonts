@@ -1,6 +1,6 @@
 # Script letter fonts
 
-Unicode has no subscript b, c, d, f, g, q, w, y, or z, no uppercase subscripts at all, and no superscript S, X, Y, or Z. Most programming fonts also lack many of the sub- and superscript letters Unicode does have. This repo has companion fonts that fill both gaps for popular monospace fonts, drawn from each font's own letters so they match it.
+Unicode has no subscript b, c, d, f, g, q, w, y, or z, no uppercase subscripts at all, and no superscript S, X, Y, or Z. Most programming fonts also lack many of the sub- and superscript letters Unicode does have. This repo has companion fonts that fill both gaps for popular monospace and proportional fonts, drawn from each font's own letters so they match it.
 
 ![Each font with its companion; red letters come from the companion](preview.png)
 
@@ -17,6 +17,8 @@ Private-use characters show as boxes anywhere without a companion font, so text 
 
 ## Fonts
 
+Monospace:
+
 | Companion                | For                   | License                                                          |
 | ------------------------ | --------------------- | ---------------------------------------------------------------- |
 | DejaVu Sans Mono Scripts | DejaVu Sans Mono 2.37 | Bitstream Vera license, with DejaVu changes in the public domain |
@@ -32,9 +34,24 @@ Private-use characters show as boxes anywhere without a companion font, so text 
 | Noto Sans Mono Scripts   | Noto Sans Mono 2.014  | OFL 1.1                                                          |
 | Roboto Mono Scripts      | Roboto Mono 3.001     | OFL 1.1                                                          |
 
-Cascadia Code, Source Code Pro, and IBM Plex Mono have Reserved Font Names, so modified versions cannot use their names. Their companions use the names [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) chose for the same reason. The Ubuntu Font Licence requires a version as changed as a companion to avoid the Ubuntu name entirely, so the Ubuntu Mono companion is called Teranga Mono Scripts.
+Proportional:
 
-Each folder in `fonts/` holds the companion, the license of the font it was made from (which also covers the companion), and config snippets for kitty, Ghostty, and fontconfig. Each companion holds only the letters its font lacks, between 39 and 104 of them.
+| Companion            | For                     | License                                                          |
+| -------------------- | ----------------------- | ---------------------------------------------------------------- |
+| DejaVu Sans Scripts  | DejaVu Sans 2.37        | Bitstream Vera license, with DejaVu changes in the public domain |
+| DejaVu Serif Scripts | DejaVu Serif 2.37       | Bitstream Vera license, with DejaVu changes in the public domain |
+| Noto Sans Scripts    | Noto Sans 2.015         | OFL 1.1                                                          |
+| Noto Serif Scripts   | Noto Serif 2.015        | OFL 1.1                                                          |
+| Roboto Scripts       | Roboto 3.015            | OFL 1.1                                                          |
+| Inter Scripts        | Inter 4.001             | OFL 1.1                                                          |
+| Cantarell Scripts    | Cantarell 1.004         | OFL 1.1                                                          |
+| Teranga Scripts      | Ubuntu 0.83             | Ubuntu Font Licence 1.0                                          |
+| Baskerville Scripts  | Libre Baskerville 2.005 | OFL 1.1                                                          |
+| EB Garamond Scripts  | EB Garamond 1.003       | OFL 1.1                                                          |
+
+Cascadia Code, Source Code Pro, and IBM Plex Mono have Reserved Font Names, so modified versions cannot use their names. Their companions use the names [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) chose for the same reason. Libre Baskerville reserves its name too, so its companion is Baskerville Scripts. The Ubuntu Font Licence requires a version as changed as a companion to avoid the Ubuntu name entirely, so the Ubuntu and Ubuntu Mono companions are Teranga Scripts and Teranga Mono Scripts.
+
+Each folder in `fonts/` holds the companion, the license of the font it was made from (which also covers the companion), and config snippets: kitty, Ghostty, and fontconfig for monospace companions, and fontconfig alone for proportional ones, since the terminal snippets only matter in terminals. Each companion holds only the letters its font lacks, between 39 and 104 of them.
 
 ## Install
 
@@ -58,6 +75,8 @@ The letters Unicode lacks then work in most terminals with no further setup: no 
 
 kitty and Ghostty map exact code points to the companion, so they also replace placeholders in your font, like Inconsolata's full-size ⁿ. The others only use the companion for characters your font lacks.
 
+For a proportional companion, install the font the same way and copy its `fontconfig.conf` into `~/.config/fontconfig/conf.d/`. Programs that follow fontconfig's fallback order then draw the letters your font lacks from the companion.
+
 The kitty setup and the fontconfig ordering have been tested. The other entries follow each terminal's documentation.
 
 ## Typing them
@@ -77,6 +96,7 @@ Neovim treats these characters as one column wide as long as `ambiwidth` is `sin
 `build.py` reads each source font named in `sources.json`, downloading it and checking its sha256. For every script letter the font lacks, it shrinks the font's own letter the way the font draws the script letters it already has:
 
 - The scale and vertical position come from a pair like a and ᵃ, or n and ⁿ. A font with no script letters gets 63% width, 56% height, and superscript capitals reaching the cap height, which are DejaVu Sans Mono's proportions.
+- Where the font has designed superscript and subscript letters behind its OpenType `sups`, `subs`, or `sinf` features, those are used instead of scaled letters. Some fonts position those glyphs differently from their Unicode script letters (EB Garamond's sit higher), so each set is scaled and shifted to match the Unicode ones where both exist.
 - Many fonts draw their script letters with heavier strokes than plain scaling gives. The build measures this from a pair like n and ⁿ and thickens the strokes with FontForge to match.
 - Each glyph is centered in the font's cell, so it stays one column wide. For a proportional font (with `--font`), each glyph instead gets its letter's advance width scaled like the letter, and is centered in that.
 - Scripts follow the font's own sub- and superscripts when it has them. Otherwise they go past the baseline or the cap height by the subscript offset the font records (`ySubscriptYOffset`, 0.075 to 0.14 em in these fonts): subscripts drop below the baseline, and superscript capitals rise above the cap height. Capitals go past the line even in fonts whose own lowercase scripts sit on it, like DejaVu Sans Mono's subscripts, because capitals flush with the line are so tall that they read as small capitals. The exception is a font with its own capital superscripts, like ᴬ in DejaVu Sans Mono: the missing ones match those. `--placement` changes this (see below).

@@ -88,7 +88,7 @@
     "for": "Noto Sans Mono 2.014",
     "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/NotoSansMono%5Bwdth,wght%5D.ttf",
     "sha256": "2cb2adb378a8f574213e23df697050b83c54c27df465a2015552740b2769a081",
-    "instance": {"wght": 400, "wdth": 100},
+  "instance": {"wght": 400, "wdth": 100},
     "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/OFL.txt",
     "license_file": "OFL.txt"
   },
@@ -98,6 +98,94 @@
     "url": "https://raw.githubusercontent.com/googlefonts/RobotoMono/main/fonts/ttf/RobotoMono-Regular.ttf",
     "sha256": "af0bff7599c3df3831755c16e39b3c496df74b8c8d8a1161b14dc8461be17cb4",
     "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/OFL.txt",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "DejaVu Sans Scripts",
+    "for": "DejaVu Sans 2.37",
+    "url": "https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.tar.bz2",
+    "sha256": "fa9ca4d13871dd122f61258a80d01751d603b4d3ee14095d65453b4e846e17d7",
+    "member": "dejavu-fonts-ttf-2.37/ttf/DejaVuSans.ttf",
+    "license_member": "dejavu-fonts-ttf-2.37/LICENSE",
+    "license_file": "LICENSE"
+  },
+  {
+    "family": "DejaVu Serif Scripts",
+    "for": "DejaVu Serif 2.37",
+    "url": "https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.tar.bz2",
+    "sha256": "fa9ca4d13871dd122f61258a80d01751d603b4d3ee14095d65453b4e846e17d7",
+    "member": "dejavu-fonts-ttf-2.37/ttf/DejaVuSerif.ttf",
+    "license_member": "dejavu-fonts-ttf-2.37/LICENSE",
+    "license_file": "LICENSE"
+  },
+  {
+    "family": "Noto Sans Scripts",
+    "for": "Noto Sans 2.015",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/NotoSans%5Bwdth,wght%5D.ttf",
+    "sha256": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+  "instance": {"wght": 400, "wdth": 100},
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/OFL.txt",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "Noto Serif Scripts",
+    "for": "Noto Serif 2.015",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/NotoSerif%5Bwdth,wght%5D.ttf",
+    "sha256": "4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713",
+  "instance": {"wght": 400, "wdth": 100},
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserif/OFL.txt",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "Roboto Scripts",
+    "for": "Roboto 3.015",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/roboto/Roboto%5Bwdth,wght%5D.ttf",
+    "sha256": "d7598e12c5dbef095ff8272cfc55da0250bd07fbdecbac8a530b9b277872a134",
+  "instance": {"wght": 400, "wdth": 100},
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/roboto/OFL.txt",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "Inter Scripts",
+    "for": "Inter 4.001",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter%5Bopsz,wght%5D.ttf",
+    "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+  "instance": {"wght": 400, "opsz": 14},
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/OFL.txt",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "Cantarell Scripts",
+    "for": "Cantarell 1.004",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/cantarell/Cantarell-Regular.ttf",
+    "sha256": "840a255779258a2b24b5e3d1f32a821ed641fdd5ef1e47c4dc180064db9ccfa1",
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/cantarell/OFL.txt",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "Teranga Scripts",
+    "for": "Ubuntu 0.83",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ufl/ubuntu/Ubuntu-Regular.ttf",
+    "sha256": "3128df86a31805618436d0ae5651ba4285d0c9de0a39057d025f64ee33bceb64",
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ufl/ubuntu/UFL.txt",
+    "license_file": "UFL.txt"
+  },
+  {
+    "family": "Baskerville Scripts",
+    "for": "Libre Baskerville 2.005",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/librebaskerville/LibreBaskerville%5Bwght%5D.ttf",
+    "sha256": "05a95421961341c5b2556285e8415df9db27dab4f4abe22b446b3c6a8b916c5d",
+  "instance": {"wght": 400},
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/librebaskerville/OFL.txt",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "EB Garamond Scripts",
+    "for": "EB Garamond 1.003",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/ebgaramond/EBGaramond%5Bwght%5D.ttf",
+    "sha256": "ef9512f92f6d579e5dc75af59a5a4b1b8b47d2eda89e00b954d44520e5369027",
+  "instance": {"wght": 400},
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/ebgaramond/OFL.txt",
     "license_file": "OFL.txt"
   }
 ]
