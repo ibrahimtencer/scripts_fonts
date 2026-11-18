@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 #Renders preview.png: a sample line per font in sources.json, with each character drawn by the companion (in red) when it has it, as a terminal that maps the companion's code points does, and by the source font otherwise.
-#Usage: preview.py, after build.py. Needs Pillow.
+#Usage: preview.py, after build.py, or preview.py --font <source font> <companion font> for one specimen of any pair. Needs Pillow.
+import argparse
 import io
 import json
 import os
+import sys
 
 from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
@@ -30,6 +32,35 @@ def source_font(entry):
     return data
 
 
+halves = ['abcdefghijklm', 'nopqrstuvwxyz', 'ABCDEFGHIJKLM', 'NOPQRSTUVWXYZ']
+lines = [' '.join(('x' if c.islower() else 'H') + chr(point(c)) for c in half) for point in (subscript_point, superscript_point) for half in halves]
+
+
+def specimen(source, companion_path, title, path):
+    #a 1920x1080 sheet of every sub- and superscript letter after an ordinary letter, half an alphabet per line
+    has_companion = set(TTFont(companion_path).getBestCmap())
+    fonts = {'source': ImageFont.truetype(io.BytesIO(source), 64), 'companion': ImageFont.truetype(companion_path, 64)}
+    cell = fonts['source'].getlength('M')
+    sheet = Image.new('RGB', (1920, 1080), 'white')
+    draw = ImageDraw.Draw(sheet)
+    draw.text((60, 30), title, font=ImageFont.truetype(io.BytesIO(source), 40), fill='#555555')
+    for row, text in enumerate(lines):
+        for col, char in enumerate(text):
+            which = 'companion' if ord(char) in has_companion else 'source'
+            draw.text((60 + col * cell, 120 + row * 118), char, font=fonts[which], fill='black' if which == 'source' else '#b00000')
+    sheet.save(path)
+    print(path)
+
+
+parser = argparse.ArgumentParser(description='Render preview.png and specimens/ for the fonts in sources.json.')
+parser.add_argument('--font', nargs=2, metavar=('SOURCE', 'COMPANION'), help='render one specimen for the font file SOURCE and its companion file COMPANION into the current directory instead')
+args = parser.parse_args()
+if args.font:
+    source = open(args.font[0], 'rb').read()
+    family = TTFont(args.font[1])['name'].getBestFamilyName()
+    specimen(source, args.font[1], f'{TTFont(args.font[0])["name"].getBestFamilyName()}  +  {family} (red)', family.replace(' ', '') + '.png')
+    sys.exit()
+
 entries = json.load(open(os.path.join(ROOT, 'sources.json')))
 label_width = 19
 image = Image.new('RGB', (int(SIZE * 0.62 * (label_width + len(sample) + 2)), int(SIZE * 1.7) * len(entries) + SIZE), 'white')
@@ -48,24 +79,6 @@ for row, entry in enumerate(entries):
 image.save(os.path.join(ROOT, 'preview.png'))
 print(os.path.join(ROOT, 'preview.png'), image.size)
 
-#one 1920x1080 specimen per font in specimens/: every sub- and superscript letter after an ordinary letter, half an alphabet per line
 os.makedirs(os.path.join(ROOT, 'specimens'), exist_ok=True)
-halves = ['abcdefghijklm', 'nopqrstuvwxyz', 'ABCDEFGHIJKLM', 'NOPQRSTUVWXYZ']
-lines = [' '.join(('x' if c.islower() else 'H') + chr(point(c)) for c in half) for point in (subscript_point, superscript_point) for half in halves]
 for entry in entries:
-    source = source_font(entry)
-    companion_path = os.path.join(ROOT, 'fonts', entry['family'].replace(' ', ''), entry['family'].replace(' ', '') + '-Regular.ttf')
-    has_companion = set(TTFont(companion_path).getBestCmap())
-    fonts = {'source': ImageFont.truetype(io.BytesIO(source), 64), 'companion': ImageFont.truetype(companion_path, 64)}
-    cell = fonts['source'].getlength('M')
-    specimen = Image.new('RGB', (1920, 1080), 'white')
-    draw = ImageDraw.Draw(specimen)
-    draw.text((60, 30), f'{entry["for"]}  +  {entry["family"]} (red)', font=ImageFont.truetype(io.BytesIO(source), 40), fill='#555555')
-    for row, text in enumerate(lines):
-        y = 120 + row * 118
-        for col, char in enumerate(text):
-            which = 'companion' if ord(char) in has_companion else 'source'
-            draw.text((60 + col * cell, y), char, font=fonts[which], fill='black' if which == 'source' else '#b00000')
-    path = os.path.join(ROOT, 'specimens', entry['family'].replace(' ', '') + '.png')
-    specimen.save(path)
-    print(path)
+    specimen(source_font(entry), os.path.join(ROOT, 'fonts', entry['family'].replace(' ', ''), entry['family'].replace(' ', '') + '-Regular.ttf'), f'{entry["for"]}  +  {entry["family"]} (red)', os.path.join(ROOT, 'specimens', entry['family'].replace(' ', '') + '.png'))

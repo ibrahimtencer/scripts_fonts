@@ -90,6 +90,8 @@ Building needs Python with fontTools and FontForge's Python module (`python-font
 ./build.py --font MyFont.ttf 'My Font Scripts'   # any other font file
 ```
 
+`./preview.py` renders `preview.png` and `specimens/` after a build, and `./preview.py --font MyFont.ttf MyFontScripts-Regular.ttf` renders a specimen for any font and its companion.
+
 `--placement` sets where scripts go when the font has none of its own to copy:
 
 - `capitals-outside` (the default): move every subscript below the baseline and every superscript up so capitals pass the cap height, by the font's subscript offset, and do the same for capitals in fonts whose own lowercase scripts sit on the line.
