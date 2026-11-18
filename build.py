@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #Builds the companion fonts listed in sources.json into fonts/<Family>/: the font, its source's license, and config snippets for kitty, Ghostty, and fontconfig.
-#Usage: build.py [--subscripts STYLE] [family ...], or build.py --font <file> <family> to build a companion and its config snippets for any font file into the current directory. build.py --help lists the options.
+#Usage: build.py [--placement STYLE] [family ...], or build.py --font <file> <family> to build a companion and its config snippets for any font file into the current directory. build.py --help lists the options.
 #Downloads are cached in $XDG_CACHE_HOME/scripts_fonts/downloads and checked against the sha256 in sources.json.
 import argparse
 import hashlib
@@ -29,7 +29,7 @@ from fontTools.varLib import instancer
 ROOT = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(os.environ.get('XDG_CACHE_HOME') or os.path.expanduser('~/.cache'), 'scripts_fonts', 'downloads')
 VERSION = '1.000'
-SUBSCRIPT_STYLES = ['on-baseline', 'lowered', 'capitals-lowered']
+PLACEMENTS = ['flush', 'outside', 'capitals-outside']
 
 SUBSCRIPTS = {'a': 0x2090, 'e': 0x2091, 'o': 0x2092, 'x': 0x2093, 'h': 0x2095, 'k': 0x2096, 'l': 0x2097, 'm': 0x2098, 'n': 0x2099, 'p': 0x209A, 's': 0x209B, 't': 0x209C, 'i': 0x1D62, 'r': 0x1D63, 'u': 0x1D64, 'v': 0x1D65, 'j': 0x2C7C}
 SUPERSCRIPTS = {
@@ -148,7 +148,7 @@ def member_of(archive, name):
     return tarfile.open(fileobj=io.BytesIO(archive)).extractfile(name).read()
 
 
-def companion(source, family, subscripts='capitals-lowered'):
+def companion(source, family, placement='capitals-outside'):
     #returns a TTFont holding every script letter the source lacks, drawn from the source's own letters
     cmap = source.getBestCmap()
     glyphs = source.getGlyphSet()
@@ -189,21 +189,25 @@ def companion(source, family, subscripts='capitals-lowered'):
                 return extra if extra > 0.05 * x_scale * base_stem else 0
         return 0
 
-    #without a superscript to measure: 63% by 56% (DejaVu Sans Mono's proportions), with capitals reaching the cap height
-    superscript = measured(['ᵃa', 'ⁿn', 'ᵒo', 'ˣx', 'ᴬA', 'ᴴH']) or (0.63, 0.56, cap_top * 0.44)
+    #how far scripts go past the baseline or the cap height when the font gives nothing to copy: its own subscript offset, or nothing for flush placement (see PLACEMENTS)
+    offset = 0 if placement == 'flush' else source['OS/2'].ySubscriptYOffset
+    #without a superscript to measure: 63% by 56% (DejaVu Sans Mono's proportions), with capitals reaching the offset above the cap height
+    superscript = measured(['ᵃa', 'ⁿn', 'ᵒo', 'ˣx', 'ᴬA', 'ᴴH']) or (0.63, 0.56, cap_top * 0.44 + offset)
     superscript += (extra_weight(['ⁿn', 'ʰh', 'ᵐm', 'ᵘu'], superscript[0]),)
-    #without a subscript to measure: the superscript's size and weight, on the baseline or dropped by the font's own subscript offset (see SUBSCRIPT_STYLES)
-    drop = 0 if subscripts == 'on-baseline' else -source['OS/2'].ySubscriptYOffset
+    #without a subscript to measure: the superscript's size and weight, the offset below the baseline
     subscript = measured(['ₐa', 'ₙn', 'ₒo', 'ₓx', 'ₑe'])
-    subscript = subscript + (extra_weight(['ₙn', 'ₕh', 'ₘm'], subscript[0]),) if subscript else (superscript[0], superscript[1], drop, superscript[3])
-    #capitals reach so high that on the baseline they read as small capitals, so they drop below it even where the font's own subscripts sit on it
-    capital_subscript = subscript[:2] + (drop,) + subscript[3:] if subscripts == 'capitals-lowered' and subscript[2] >= -0.02 * source['head'].unitsPerEm else subscript
+    subscript = subscript + (extra_weight(['ₙn', 'ₕh', 'ₘm'], subscript[0]),) if subscript else (superscript[0], superscript[1], -offset, superscript[3])
+    #capitals are so tall that flush with the baseline or the cap height they read as small capitals, so with capitals-outside they go past the line even where the font's own lowercase scripts sit on it; a font's own capital superscripts still set where the others go
+    small = 0.02 * source['head'].unitsPerEm
+    capital_subscript = subscript[:2] + (-offset,) + subscript[3:] if placement == 'capitals-outside' and subscript[2] >= -small else subscript
+    own_capitals = any(real_pair(script, base) for script, base in ['ᴬA', 'ᴴH', 'ᴮB'])
+    capital_superscript = superscript[:2] + (cap_top + offset - superscript[1] * cap_top,) + superscript[3:] if placement == 'capitals-outside' and not own_capitals and superscript[1] * cap_top + superscript[2] <= cap_top + small else superscript
 
     #a script letter the font lacks, or only fakes with the ordinary letter, is drawn; a terminal that maps code points to fonts then overrides the fake
     letters = string.ascii_lowercase + string.ascii_uppercase
     targets = sorted(
         [(subscript_point(c), c, capital_subscript if c.isupper() else subscript) for c in letters if not real_pair(chr(subscript_point(c)), c)]
-        + [(superscript_point(c), c, superscript) for c in letters if not real_pair(chr(superscript_point(c)), c)]
+        + [(superscript_point(c), c, capital_superscript if c.isupper() else superscript) for c in letters if not real_pair(chr(superscript_point(c)), c)]
     )
 
     def scaled(letter, x_scale, y_scale, rise, extra):
@@ -268,13 +272,13 @@ def terminal_configs(font, family, source_family):
     }
 
 
-def build(entry, subscripts='capitals-lowered'):
+def build(entry, placement='capitals-outside'):
     archive = fetch(entry['url'], entry['sha256'])
     source = TTFont(io.BytesIO(member_of(archive, entry['member']) if 'member' in entry else archive))
     if 'instance' in entry:
         source = instancer.instantiateVariableFont(source, entry['instance'])
     family = entry['family']
-    font = companion(source, family, subscripts)
+    font = companion(source, family, placement)
     out_dir = os.path.join(ROOT, 'fonts', family.replace(' ', ''))
     os.makedirs(out_dir, exist_ok=True)
     font.save(os.path.join(out_dir, family.replace(' ', '') + '-Regular.ttf'))
@@ -288,11 +292,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Build companion fonts of sub- and superscript letters.')
     parser.add_argument('families', nargs='*', help='families from sources.json to build (default: all of them)')
     parser.add_argument('--font', nargs=2, metavar=('FILE', 'FAMILY'), help='build a companion named FAMILY for the font FILE into the current directory instead')
-    parser.add_argument('--subscripts', choices=SUBSCRIPT_STYLES, default='capitals-lowered', help='where subscripts sit when the font has none of its own to copy: on-baseline puts them all on the baseline; lowered drops them all by the font\'s subscript offset; capitals-lowered (the default) does the same and also drops capitals in fonts whose own subscripts sit on the baseline')
+    parser.add_argument('--placement', choices=PLACEMENTS, default='capitals-outside', help='where scripts go when the font has none of its own to copy: flush puts subscripts on the baseline and superscript capitals at the cap height; outside moves them past those lines by the font\'s subscript offset; capitals-outside (the default) does the same and also moves capitals past the line in fonts whose own lowercase scripts sit on it')
     args = parser.parse_args()
     if args.font:
         source = TTFont(args.font[0], fontNumber=0)
-        font = companion(source, args.font[1], args.subscripts)
+        font = companion(source, args.font[1], args.placement)
         font.save(args.font[1].replace(' ', '') + '-Regular.ttf')
         for name, text in terminal_configs(font, args.font[1], source['name'].getBestFamilyName()).items():
             open(name, 'w').write(text)
@@ -303,4 +307,4 @@ if __name__ == '__main__':
             sys.exit(f'not in sources.json: {", ".join(sorted(unknown))}')
         for entry in entries:
             if not args.families or entry['family'] in args.families:
-                build(entry, args.subscripts)
+                build(entry, args.placement)

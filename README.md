@@ -79,7 +79,7 @@ Neovim treats these characters as one column wide as long as `ambiwidth` is `sin
 - The scale and vertical position come from a pair like a and ᵃ, or n and ⁿ. A font with no script letters gets 63% width, 56% height, and superscript capitals reaching the cap height, which are DejaVu Sans Mono's proportions.
 - Many fonts draw their script letters with heavier strokes than plain scaling gives. The build measures this from a pair like n and ⁿ and thickens the strokes with FontForge to match.
 - Each glyph is centered in the font's cell, so it stays one column wide.
-- Subscripts follow the font's own subscripts when it has them. Otherwise they drop below the baseline by the subscript offset the font records (`ySubscriptYOffset`, 0.075 to 0.14 em in these fonts). Capital subscripts always drop below the baseline, even in fonts whose own subscripts sit on it, like DejaVu Sans Mono: Unicode has no capital subscripts to match, and capitals on the baseline reach so high that they read as small capitals rather than subscripts. `--subscripts` changes this (see below).
+- Scripts follow the font's own sub- and superscripts when it has them. Otherwise they go past the baseline or the cap height by the subscript offset the font records (`ySubscriptYOffset`, 0.075 to 0.14 em in these fonts): subscripts drop below the baseline, and superscript capitals rise above the cap height. Capitals go past the line even in fonts whose own lowercase scripts sit on it, like DejaVu Sans Mono's subscripts, because capitals flush with the line are so tall that they read as small capitals. The exception is a font with its own capital superscripts, like ᴬ in DejaVu Sans Mono: the missing ones match those. `--placement` changes this (see below).
 - A few fonts fill a script code point with a full-size copy of the letter, like Inconsolata's ⁿ. The build treats those as missing, so terminals that map code points to fonts draw the companion's letter instead.
 
 Building needs Python with fontTools and FontForge's Python module (`python-fonttools` and `fontforge` on Arch). `preview.py` also needs Pillow.
@@ -90,11 +90,11 @@ Building needs Python with fontTools and FontForge's Python module (`python-font
 ./build.py --font MyFont.ttf 'My Font Scripts'   # any other font file
 ```
 
-`--subscripts` sets where subscripts go when the font has none of its own to copy:
+`--placement` sets where scripts go when the font has none of its own to copy:
 
-- `capitals-lowered` (the default): drop every subscript by the font's subscript offset, and drop capitals by it even in fonts whose own subscripts sit on the baseline.
-- `lowered`: drop every subscript by the font's subscript offset, but let capitals follow the font's own subscripts like lowercase does.
-- `on-baseline`: put every subscript on the baseline, unless the font's own subscripts drop below it.
+- `capitals-outside` (the default): move every subscript below the baseline and every superscript up so capitals pass the cap height, by the font's subscript offset, and do the same for capitals in fonts whose own lowercase scripts sit on the line.
+- `outside`: the same, except that capitals follow the font's own lowercase scripts like lowercase does.
+- `flush`: put subscripts on the baseline and superscript capitals at the cap height, unless the font's own scripts go past those lines.
 
 FontForge prints "Internal Error (overlap)" messages for a few Cascadia Code glyphs. The resulting outlines are correct.
 
