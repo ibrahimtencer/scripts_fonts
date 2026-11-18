@@ -240,19 +240,29 @@ def companion(source, family, placement='capitals-outside'):
         shaped.replay(TransformPen(Cu2QuPen(pen, max_err=1, reverse_direction='glyf' not in source and not extra), (1, 0, 0, 1, advance / 2 - (x0 + x1) / 2 if center else 0, 0)))
         return pen.glyph(), round(advance)
 
+    def median(values):
+        values = sorted(values)
+        return values[len(values) // 2] if len(values) % 2 else (values[len(values) // 2 - 1] + values[len(values) // 2]) / 2
+
     def calibrated(kind, letters):
-        #(scale, vertical shift) that turn a designed script glyph into the font's own Unicode script glyph of the same letter, from the first letter that has both; some fonts position their feature glyphs differently from their Unicode ones (EB Garamond's superiors sit higher and its inferiors on the baseline)
-        for letter in letters:
-            point = superscript_point(letter) if kind == 'super' else subscript_point(letter)
-            form, unicode_form = designed[kind].get(cmap[ord(letter)]), cmap.get(point)
-            if real(form, letter) and real(unicode_form, letter) and form != unicode_form:
-                (_, fy0, _, fy1), (_, uy0, _, uy1) = bounds(form), bounds(unicode_form)
-                size = (uy1 - uy0) / (fy1 - fy0)
-                return size, uy0 - size * fy0
-        return None
+        #(scale, vertical shift) that turn designed script glyphs into the font's own Unicode script glyphs: the median over every letter the font has both of, since some fonts position their feature glyphs differently from their Unicode ones (EB Garamond's superiors sit higher and its inferiors on the baseline), and the Unicode ones can disagree among themselves too (EB Garamond's ₐ sits lower than its ₙ, and its ᵢ on the baseline)
+        pairs = [(designed[kind].get(cmap[ord(letter)]), cmap.get(superscript_point(letter) if kind == 'super' else subscript_point(letter))) for letter in letters]
+        boxes = [(bounds(form), bounds(unicode_form)) for (form, unicode_form), letter in zip(pairs, letters) if real(form, letter) and real(unicode_form, letter)]
+        if not boxes:
+            return None
+        size = median((uy1 - uy0) / (fy1 - fy0) for (_, fy0, _, fy1), (_, uy0, _, uy1) in boxes)
+        return size, median(uy0 - size * fy0 for (_, fy0, _, _), (_, uy0, _, _) in boxes)
 
     #capitals use their own calibration when the font has capital Unicode scripts to match, and the lowercase one otherwise
-    calibration = {(kind, upper): (calibrated(kind, 'AHBDEN' if upper else 'anoxeh') or calibrated(kind, 'anoxeh') or (1, 0)) for kind in ('super', 'sub') for upper in (False, True)}
+    calibration = {(kind, upper): (calibrated(kind, string.ascii_uppercase if upper else string.ascii_lowercase) or calibrated(kind, string.ascii_lowercase) or (1, 0)) for kind in ('super', 'sub') for upper in (False, True)}
+
+    def misplaced(kind, letter):
+        #whether the font's own Unicode script glyph for letter sits more than 2% of the em away from where its calibrated designed glyph would, so the companion replaces it
+        form, unicode_form = designed[kind].get(cmap[ord(letter)]), cmap.get(superscript_point(letter) if kind == 'super' else subscript_point(letter))
+        if not (real(form, letter) and real(unicode_form, letter)):
+            return False
+        size, shift = calibration[kind, letter.isupper()]
+        return abs(bounds(unicode_form)[1] - (size * bounds(form)[1] + shift)) > 0.02 * source['head'].unitsPerEm
 
     def glyph_for(kind, letter, props):
         #a code point the font lacks, or only fakes with the ordinary letter, gets the font's designed script form when its features have one, copied as drawn and kept in place (centered in the cell for a monospace font); otherwise the letter scaled by props. A monospace font keeps the full cell so the letter stays one column wide, a proportional one gets a scaled advance.
@@ -264,11 +274,11 @@ def companion(source, family, placement='capitals-outside'):
         x_scale, y_scale, rise, extra = props
         return drawn(letter_glyph, (x_scale, 0, 0, y_scale, 0, rise), hmtx[letter_glyph][0] * (1 if monospace else x_scale), extra, True)
 
-    #a script code point the font lacks, or only fakes with the ordinary letter, is drawn; a terminal that maps code points to fonts then overrides the fake
+    #a script code point the font lacks, only fakes with the ordinary letter, or draws out of line with its other scripts is drawn; a program that maps code points to fonts then overrides the font's own glyph
     letters = string.ascii_lowercase + string.ascii_uppercase
     targets = sorted(
-        [(subscript_point(c), 'sub', c, capital_subscript if c.isupper() else subscript) for c in letters if not real(cmap.get(subscript_point(c)), c)]
-        + [(superscript_point(c), 'super', c, capital_superscript if c.isupper() else superscript) for c in letters if not real(cmap.get(superscript_point(c)), c)]
+        [(subscript_point(c), 'sub', c, capital_subscript if c.isupper() else subscript) for c in letters if not real(cmap.get(subscript_point(c)), c) or misplaced('sub', c)]
+        + [(superscript_point(c), 'super', c, capital_superscript if c.isupper() else superscript) for c in letters if not real(cmap.get(superscript_point(c)), c) or misplaced('super', c)]
     )
 
     names = {cp: f'u{cp:04X}' for cp, _, _, _ in targets}
