@@ -75,10 +75,9 @@ for row, entry in enumerate(entries):
     companion_path = os.path.join(ROOT, 'fonts', entry['family'].replace(' ', ''), entry['family'].replace(' ', '') + '-Regular.ttf')
     has_companion = set(TTFont(companion_path).getBestCmap())
     fonts = {'source': ImageFont.truetype(io.BytesIO(source), SIZE), 'companion': ImageFont.truetype(companion_path, SIZE)}
-    cell = fonts['source'].getlength('M')
     y = SIZE / 2 + row * SIZE * 1.7
     draw.text((SIZE / 2, y), entry['for'].rsplit(' ', 1)[0], font=fonts['source'], fill='#555555')
-    draw_line(draw, SIZE / 2 + label_width * cell, y, sample, fonts, has_companion)
+    draw_line(draw, SIZE / 2 + label_width * SIZE * 0.62, y, sample, fonts, has_companion)
 image.save(os.path.join(ROOT, 'preview.png'))
 print(os.path.join(ROOT, 'preview.png'), image.size)
 
