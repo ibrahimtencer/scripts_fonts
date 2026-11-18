@@ -36,20 +36,22 @@ Monospace:
 
 Proportional:
 
-| Companion            | For                     | License                                                          |
-| -------------------- | ----------------------- | ---------------------------------------------------------------- |
-| DejaVu Sans Scripts  | DejaVu Sans 2.37        | Bitstream Vera license, with DejaVu changes in the public domain |
-| DejaVu Serif Scripts | DejaVu Serif 2.37       | Bitstream Vera license, with DejaVu changes in the public domain |
-| Noto Sans Scripts    | Noto Sans 2.015         | OFL 1.1                                                          |
-| Noto Serif Scripts   | Noto Serif 2.015        | OFL 1.1                                                          |
-| Roboto Scripts       | Roboto 3.015            | OFL 1.1                                                          |
-| Inter Scripts        | Inter 4.001             | OFL 1.1                                                          |
-| Cantarell Scripts    | Cantarell 1.004         | OFL 1.1                                                          |
-| Teranga Scripts      | Ubuntu 0.83             | Ubuntu Font Licence 1.0                                          |
-| Baskerville Scripts  | Libre Baskerville 2.005 | OFL 1.1                                                          |
-| EB Garamond Scripts  | EB Garamond 1.003       | OFL 1.1                                                          |
+| Companion                | For                     | License                                                          |
+| ------------------------ | ----------------------- | ---------------------------------------------------------------- |
+| DejaVu Sans Scripts      | DejaVu Sans 2.37        | Bitstream Vera license, with DejaVu changes in the public domain |
+| DejaVu Serif Scripts     | DejaVu Serif 2.37       | Bitstream Vera license, with DejaVu changes in the public domain |
+| Noto Sans Scripts        | Noto Sans 2.015         | OFL 1.1                                                          |
+| Noto Serif Scripts       | Noto Serif 2.015        | OFL 1.1                                                          |
+| Roboto Scripts           | Roboto 3.015            | OFL 1.1                                                          |
+| Inter Scripts            | Inter 4.001             | OFL 1.1                                                          |
+| Cantarell Scripts        | Cantarell 1.004         | OFL 1.1                                                          |
+| Teranga Scripts          | Ubuntu 0.83             | Ubuntu Font Licence 1.0                                          |
+| Baskerville Scripts      | Libre Baskerville 2.005 | OFL 1.1                                                          |
+| EB Garamond Scripts      | EB Garamond 1.003       | OFL 1.1                                                          |
+| Literation Sans Scripts  | Liberation Sans 2.1.5   | OFL 1.1                                                          |
+| Literation Serif Scripts | Liberation Serif 2.1.5  | OFL 1.1                                                          |
 
-Cascadia Code, Source Code Pro, and IBM Plex Mono have Reserved Font Names, so modified versions cannot use their names. Their companions use the names [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) chose for the same reason. Libre Baskerville reserves its name too, so its companion is Baskerville Scripts. The Ubuntu Font Licence requires a version as changed as a companion to avoid the Ubuntu name entirely, so the Ubuntu and Ubuntu Mono companions are Teranga Scripts and Teranga Mono Scripts.
+Cascadia Code, Source Code Pro, and IBM Plex Mono have Reserved Font Names, so modified versions cannot use their names. Their companions use the names [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) chose for the same reason. Libre Baskerville reserves its name too, so its companion is Baskerville Scripts, and Liberation Sans and Serif reserve theirs, so theirs follow Nerd Fonts' Literation Mono. The Ubuntu Font Licence requires a version as changed as a companion to avoid the Ubuntu name entirely, so the Ubuntu and Ubuntu Mono companions are Teranga Scripts and Teranga Mono Scripts.
 
 Each folder in `fonts/` holds the companion, the license of the font it was made from (which also covers the companion), and config snippets: kitty, Ghostty, and fontconfig for monospace companions, and fontconfig alone for proportional ones, since the terminal snippets only matter in terminals. Each companion holds only the letters its font lacks, between 39 and 104 of them.
 

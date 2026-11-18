@@ -187,5 +187,23 @@
   "instance": {"wght": 400},
     "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/ebgaramond/OFL.txt",
     "license_file": "OFL.txt"
+  },
+  {
+    "family": "Literation Sans Scripts",
+    "for": "Liberation Sans 2.1.5",
+    "url": "https://github.com/liberationfonts/liberation-fonts/files/7261482/liberation-fonts-ttf-2.1.5.tar.gz",
+    "sha256": "7191c669bf38899f73a2094ed00f7b800553364f90e2637010a69c0e268f25d0",
+    "member": "liberation-fonts-ttf-2.1.5/LiberationSans-Regular.ttf",
+    "license_member": "liberation-fonts-ttf-2.1.5/LICENSE",
+    "license_file": "LICENSE"
+  },
+  {
+    "family": "Literation Serif Scripts",
+    "for": "Liberation Serif 2.1.5",
+    "url": "https://github.com/liberationfonts/liberation-fonts/files/7261482/liberation-fonts-ttf-2.1.5.tar.gz",
+    "sha256": "7191c669bf38899f73a2094ed00f7b800553364f90e2637010a69c0e268f25d0",
+    "member": "liberation-fonts-ttf-2.1.5/LiberationSerif-Regular.ttf",
+    "license_member": "liberation-fonts-ttf-2.1.5/LICENSE",
+    "license_file": "LICENSE"
   }
 ]
