@@ -1,0 +1,95 @@
+[
+  {
+    "family": "DejaVu Sans Mono Scripts",
+    "for": "DejaVu Sans Mono 2.37",
+    "url": "https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.tar.bz2",
+    "sha256": "fa9ca4d13871dd122f61258a80d01751d603b4d3ee14095d65453b4e846e17d7",
+    "member": "dejavu-fonts-ttf-2.37/ttf/DejaVuSansMono.ttf",
+    "license_member": "dejavu-fonts-ttf-2.37/LICENSE",
+    "license_file": "LICENSE"
+  },
+  {
+    "family": "JetBrains Mono Scripts",
+    "for": "JetBrains Mono 2.305",
+    "url": "https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/fonts/ttf/JetBrainsMono-Regular.ttf",
+    "sha256": "e6fd0d7e91550b3ed2b735d4312474362c4716edc4fc0577a0f61ed782d5aed1",
+    "license_url": "https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/OFL.txt",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "Fira Code Scripts",
+    "for": "Fira Code 6.2",
+    "url": "https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip",
+    "sha256": "0949915ba8eb24d89fd93d10a7ff623f42830d7c5ffc3ecbf960e4ecad3e3e79",
+    "member": "ttf/FiraCode-Regular.ttf",
+    "license_url": "https://raw.githubusercontent.com/tonsky/FiraCode/master/LICENSE",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "Hack Scripts",
+    "for": "Hack 3.003",
+    "url": "https://raw.githubusercontent.com/source-foundry/Hack/master/build/ttf/Hack-Regular.ttf",
+    "sha256": "15f55cc0c85a2988d2b4b3a8cdb5d77fdfbaf319e1bb5309d725db9818fb7125",
+    "license_url": "https://raw.githubusercontent.com/source-foundry/Hack/master/LICENSE.md",
+    "license_file": "LICENSE.md"
+  },
+  {
+    "family": "Iosevka Scripts",
+    "for": "Iosevka 34.8.0",
+    "url": "https://github.com/be5invis/Iosevka/releases/download/v34.8.0/PkgTTF-Iosevka-34.8.0.zip",
+    "sha256": "882dd68d3b2f1ad0e44b094d869b261d09ce17cc29818a28a19d60970483247f",
+    "member": "Iosevka-Regular.ttf",
+    "license_url": "https://raw.githubusercontent.com/be5invis/Iosevka/main/LICENSE.md",
+    "license_file": "LICENSE.md"
+  },
+  {
+    "family": "Inconsolata Scripts",
+    "for": "Inconsolata 3.100",
+    "url": "https://raw.githubusercontent.com/googlefonts/Inconsolata/main/fonts/ttf/Inconsolata-Regular.ttf",
+    "sha256": "ab56ea18c5c24d2b909261f0c63a14f9576dfabaf2e9ebd353062aa4149cefc7",
+    "license_url": "https://raw.githubusercontent.com/googlefonts/Inconsolata/main/OFL.txt",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "CaskaydiaCove Scripts",
+    "for": "Cascadia Code 2407.24",
+    "url": "https://github.com/microsoft/cascadia-code/releases/download/v2407.24/CascadiaCode-2407.24.zip",
+    "sha256": "e67a68ee3386db63f48b9054bd196ea752bc6a4ebb4df35adce6733da50c8474",
+    "member": "ttf/static/CascadiaCode-Regular.ttf",
+    "license_url": "https://raw.githubusercontent.com/microsoft/cascadia-code/main/LICENSE",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "SauceCodePro Scripts",
+    "for": "Source Code Pro 2.042",
+    "url": "https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/TTF/SourceCodePro-Regular.ttf",
+    "sha256": "74bd80d3e42a08517cd7e1108ba3d86f2da29ac0f3065be95e0357956ab9db37",
+    "license_url": "https://raw.githubusercontent.com/adobe-fonts/source-code-pro/release/LICENSE.md",
+    "license_file": "LICENSE.md"
+  },
+  {
+    "family": "BlexMono Scripts",
+    "for": "IBM Plex Mono 2.005",
+    "url": "https://raw.githubusercontent.com/IBM/plex/master/packages/plex-mono/fonts/complete/ttf/IBMPlexMono-Regular.ttf",
+    "sha256": "7c6fbddca4b700be918f5f6183d9bd4464fa427fe435f0b480d77fe2bb8c5a43",
+    "license_url": "https://raw.githubusercontent.com/IBM/plex/master/LICENSE.txt",
+    "license_file": "LICENSE.txt"
+  },
+  {
+    "family": "Noto Sans Mono Scripts",
+    "for": "Noto Sans Mono 2.014",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/NotoSansMono%5Bwdth,wght%5D.ttf",
+    "sha256": "2cb2adb378a8f574213e23df697050b83c54c27df465a2015552740b2769a081",
+    "instance": {"wght": 400, "wdth": 100},
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/OFL.txt",
+    "license_file": "OFL.txt"
+  },
+  {
+    "family": "Roboto Mono Scripts",
+    "for": "Roboto Mono 3.001",
+    "url": "https://raw.githubusercontent.com/googlefonts/RobotoMono/main/fonts/ttf/RobotoMono-Regular.ttf",
+    "sha256": "af0bff7599c3df3831755c16e39b3c496df74b8c8d8a1161b14dc8461be17cb4",
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/robotomono/OFL.txt",
+    "license_file": "OFL.txt"
+  }
+]
