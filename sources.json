@@ -76,6 +76,14 @@
     "license_file": "LICENSE.txt"
   },
   {
+    "family": "Teranga Mono Scripts",
+    "for": "Ubuntu Mono 0.80",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ufl/ubuntumono/UbuntuMono-Regular.ttf",
+    "sha256": "b35dd9d2131d5d83a9b87fe9ad22c6288fa3d17688d43302c14da29812417d63",
+    "license_url": "https://raw.githubusercontent.com/google/fonts/main/ufl/ubuntumono/UFL.txt",
+    "license_file": "UFL.txt"
+  },
+  {
     "family": "Noto Sans Mono Scripts",
     "for": "Noto Sans Mono 2.014",
     "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/NotoSansMono%5Bwdth,wght%5D.ttf",
