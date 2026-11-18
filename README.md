@@ -17,20 +17,20 @@ Private-use characters show as boxes anywhere without a companion font, so text 
 
 ## Fonts
 
-| Companion | For | License |
-| --- | --- | --- |
+| Companion                | For                   | License                                                          |
+| ------------------------ | --------------------- | ---------------------------------------------------------------- |
 | DejaVu Sans Mono Scripts | DejaVu Sans Mono 2.37 | Bitstream Vera license, with DejaVu changes in the public domain |
-| JetBrains Mono Scripts | JetBrains Mono 2.305 | OFL 1.1 |
-| Fira Code Scripts | Fira Code 6.2 | OFL 1.1 |
-| Hack Scripts | Hack 3.003 | MIT and the Bitstream Vera license |
-| Iosevka Scripts | Iosevka 34.8.0 | OFL 1.1 |
-| Inconsolata Scripts | Inconsolata 3.100 | OFL 1.1 |
-| CaskaydiaCove Scripts | Cascadia Code 2407.24 | OFL 1.1 |
-| SauceCodePro Scripts | Source Code Pro 2.042 | OFL 1.1 |
-| BlexMono Scripts | IBM Plex Mono 2.005 | OFL 1.1 |
-| Teranga Mono Scripts | Ubuntu Mono 0.80 | Ubuntu Font Licence 1.0 |
-| Noto Sans Mono Scripts | Noto Sans Mono 2.014 | OFL 1.1 |
-| Roboto Mono Scripts | Roboto Mono 3.001 | OFL 1.1 |
+| JetBrains Mono Scripts   | JetBrains Mono 2.305  | OFL 1.1                                                          |
+| Fira Code Scripts        | Fira Code 6.2         | OFL 1.1                                                          |
+| Hack Scripts             | Hack 3.003            | MIT and the Bitstream Vera license                               |
+| Iosevka Scripts          | Iosevka 34.8.0        | OFL 1.1                                                          |
+| Inconsolata Scripts      | Inconsolata 3.100     | OFL 1.1                                                          |
+| CaskaydiaCove Scripts    | Cascadia Code 2407.24 | OFL 1.1                                                          |
+| SauceCodePro Scripts     | Source Code Pro 2.042 | OFL 1.1                                                          |
+| BlexMono Scripts         | IBM Plex Mono 2.005   | OFL 1.1                                                          |
+| Teranga Mono Scripts     | Ubuntu Mono 0.80      | Ubuntu Font Licence 1.0                                          |
+| Noto Sans Mono Scripts   | Noto Sans Mono 2.014  | OFL 1.1                                                          |
+| Roboto Mono Scripts      | Roboto Mono 3.001     | OFL 1.1                                                          |
 
 Cascadia Code, Source Code Pro, and IBM Plex Mono have Reserved Font Names, so modified versions cannot use their names. Their companions use the names [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) chose for the same reason. The Ubuntu Font Licence requires a version as changed as a companion to avoid the Ubuntu name entirely, so the Ubuntu Mono companion is called Teranga Mono Scripts.
 
