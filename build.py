@@ -202,14 +202,15 @@ def companion(source, family, placement='capitals-outside'):
                 return x_scale, y_scale, sy0 - y_scale * by0
 
     def extra_weight(kind, letters, x_scale):
-        #units to add to a scaled stem so it matches the stems of the font's own script letters, from the first letter with a straight stem the font has a script form of; designers often draw scripts heavier than plain scaling would
-        for letter in letters:
-            script = script_glyph(kind, letter)
-            base_stem, script_stem = script and (stem_width(outline(cmap[ord(letter)])), stem_width(outline(script))) or (None, None)
-            if base_stem and script_stem:
-                extra = script_stem - x_scale * base_stem
-                return extra if extra > 0.05 * x_scale * base_stem else 0
-        return 0
+        #units to add to a scaled stem so it matches the stems of the font's own script letters: the median over the letters with a straight stem that the font has script forms of, since one script letter can be drawn heavier than the rest (Liberation Serif's ⁿ); designers often draw scripts heavier than plain scaling would
+        stems = [(stem_width(outline(cmap[ord(letter)])), stem_width(outline(script))) for letter in letters for script in [script_glyph(kind, letter)] if script]
+        ratios = sorted(script_stem / base_stem for base_stem, script_stem in stems if base_stem and script_stem)
+        if not ratios:
+            return 0
+        ratio = ratios[len(ratios) // 2] if len(ratios) % 2 else (ratios[len(ratios) // 2 - 1] + ratios[len(ratios) // 2]) / 2
+        base_stem = stem_width(outline(cmap[ord('n')])) or 0
+        extra = (ratio - x_scale) * base_stem
+        return extra if extra > 0.05 * x_scale * base_stem else 0
 
     #how far scripts go past the baseline or the cap height when the font gives nothing to copy: its own subscript offset, or nothing for flush placement (see PLACEMENTS)
     offset = 0 if placement == 'flush' else source['OS/2'].ySubscriptYOffset
