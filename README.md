@@ -79,6 +79,7 @@ Neovim treats these characters as one column wide as long as `ambiwidth` is `sin
 - The scale and vertical position come from a pair like a and ᵃ, or n and ⁿ. A font with no script letters gets 63% width, 56% height, and superscript capitals reaching the cap height, which are DejaVu Sans Mono's proportions.
 - Many fonts draw their script letters with heavier strokes than plain scaling gives. The build measures this from a pair like n and ⁿ and thickens the strokes with FontForge to match.
 - Each glyph is centered in the font's cell, so it stays one column wide.
+- Subscripts follow the font's own subscripts when it has them. Otherwise they drop below the baseline by the subscript offset the font records (`ySubscriptYOffset`, 0.075 to 0.14 em in these fonts). Capital subscripts always drop below the baseline, even in fonts whose own subscripts sit on it, like DejaVu Sans Mono: Unicode has no capital subscripts to match, and capitals on the baseline reach so high that they read as small capitals rather than subscripts. `--subscripts` changes this (see below).
 - A few fonts fill a script code point with a full-size copy of the letter, like Inconsolata's ⁿ. The build treats those as missing, so terminals that map code points to fonts draw the companion's letter instead.
 
 Building needs Python with fontTools and FontForge's Python module (`python-fonttools` and `fontforge` on Arch). `preview.py` also needs Pillow.
@@ -88,6 +89,12 @@ Building needs Python with fontTools and FontForge's Python module (`python-font
 ./build.py 'Fira Code Scripts'     # one of them
 ./build.py --font MyFont.ttf 'My Font Scripts'   # any other font file
 ```
+
+`--subscripts` sets where subscripts go when the font has none of its own to copy:
+
+- `capitals-lowered` (the default): drop every subscript by the font's subscript offset, and drop capitals by it even in fonts whose own subscripts sit on the baseline.
+- `lowered`: drop every subscript by the font's subscript offset, but let capitals follow the font's own subscripts like lowercase does.
+- `on-baseline`: put every subscript on the baseline, unless the font's own subscripts drop below it.
 
 FontForge prints "Internal Error (overlap)" messages for a few Cascadia Code glyphs. The resulting outlines are correct.
 
