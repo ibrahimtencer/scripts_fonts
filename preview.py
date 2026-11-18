@@ -14,7 +14,7 @@ from build import ROOT, fetch, member_of, subscript_point, superscript_point
 SIZE = 40
 sample = ' '.join([
     'x' + chr(subscript_point('a')), 'x' + chr(subscript_point('b')), 'x' + chr(subscript_point('g')), 'x' + chr(subscript_point('n')),
-    'X' + chr(subscript_point('A')), 'X' + chr(subscript_point('Q')),
+    'H' + chr(subscript_point('A')), 'H' + chr(subscript_point('Q')),
     ' x' + chr(superscript_point('a')), 'x' + chr(superscript_point('n')), 'x' + chr(superscript_point('q')),
     'M' + chr(superscript_point('C')), 'M' + chr(superscript_point('S')), 'M' + chr(superscript_point('Z')),
 ])
@@ -51,7 +51,7 @@ print(os.path.join(ROOT, 'preview.png'), image.size)
 #one 1920x1080 specimen per font in specimens/: every sub- and superscript letter after an ordinary letter, half an alphabet per line
 os.makedirs(os.path.join(ROOT, 'specimens'), exist_ok=True)
 halves = ['abcdefghijklm', 'nopqrstuvwxyz', 'ABCDEFGHIJKLM', 'NOPQRSTUVWXYZ']
-lines = [' '.join(('x' if c.islower() else 'X') + chr(subscript_point(c)) for c in half) for half in halves] + [' '.join(('x' if c.islower() else 'H') + chr(superscript_point(c)) for c in half) for half in halves]
+lines = [' '.join(('x' if c.islower() else 'H') + chr(point(c)) for c in half) for point in (subscript_point, superscript_point) for half in halves]
 for entry in entries:
     source = source_font(entry)
     companion_path = os.path.join(ROOT, 'fonts', entry['family'].replace(' ', ''), entry['family'].replace(' ', '') + '-Regular.ttf')
